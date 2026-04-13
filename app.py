@@ -2,26 +2,30 @@ import streamlit as st
 import anthropic
 
 client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
-def ask_claude(question):
-    message = client.messages.create(
+
+st.title("Nexbridge 💬")
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
+
+question = st.chat_input("Ask me anything...")
+
+if question:
+    st.session_state.messages.append({"role": "user", "content": question})
+    with st.chat_message("user"):
+        st.write(question)
+
+    response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=1000,
-        messages=[
-            {"role": "user", "content": question}
-        ]
+        messages=st.session_state.messages
     )
-    return message.content[0].text
 
-st.title("GST Checker India 🇮🇳")
-st.write("Enter any product and find out its GST rate instantly.")
-
-product = st.text_input("Enter product name:")
-
-if st.button("Check GST"):
-    if product:
-        with st.spinner("Checking..."):
-            prompt = "What is the GST rate for " + product + " in India? Explain in 2-3 sentences."
-            result = ask_claude(prompt)
-            st.success(result)
-    else:
-        st.warning("Please enter a product name.")
+    answer = response.content[0].text
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+    with st.chat_message("assistant"):
+        st.write(answer)
