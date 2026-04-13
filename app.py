@@ -8,6 +8,10 @@ st.title("Nexbridge 💬")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if st.button("+ New Chat"):
+    st.session_state.messages = []
+    st.rerun()
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
@@ -25,6 +29,10 @@ if question:
         messages=st.session_state.messages
     )
 
+    answer = response.content[0].text
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+    with st.chat_message("assistant"):
+        st.write(answer)
     answer = response.content[0].text
     st.session_state.messages.append({"role": "assistant", "content": answer})
     with st.chat_message("assistant"):
